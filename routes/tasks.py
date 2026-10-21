@@ -4,6 +4,16 @@ from config import supabase, maybe_one
 from auth_utils import login_required, get_role_in_project
 from notifications_utils import create_notifications, notify_project, diff_description, display_name, project_name
 import activity
+"""
+Task management routes for the Scrumptious project board.
+
+Provides endpoints for listing, creating, updating, moving, deleting,
+and assigning tasks, as well as retrieving task activity history.
+
+The module enforces project membership and role-based permissions,
+validates task fields such as story points, tracks completion timestamps,
+records task activity, and generates notifications for relevant changes.
+"""
 
 tasks_bp = Blueprint("tasks", __name__, url_prefix="/api/projects/<project_id>/tasks")
 

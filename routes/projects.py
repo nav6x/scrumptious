@@ -3,6 +3,18 @@ from config import supabase, maybe_one
 from auth_utils import login_required, require_role
 from notifications_utils import create_notifications, display_name, project_name
 
+"""
+Project and project-membership management routes.
+
+Implements project listing, workspace overview, project creation,
+renaming and deletion, and project-member management.
+
+Project leaders can manage membership and assign supported project
+roles. The module also formats Agile role labels, creates default
+board columns, and generates notifications for relevant membership
+and role changes.
+"""
+
 projects_bp = Blueprint("projects", __name__, url_prefix="/api/projects")
 
 # Expects:

@@ -5,11 +5,28 @@ from auth_utils import login_required, require_role
 columns_bp = Blueprint("columns", __name__, url_prefix="/api/projects/<project_id>/columns")
 
 # Expects a `columns` table: id, project_id, name, position (int, for ordering).
+"""
+Project board column management routes.
 
+Provides endpoints for listing, creating, renaming, repositioning, and
+deleting task board columns.
+
+All routes require authentication. Creating, renaming, repositioning,
+and deleting columns are restricted to project leaders to maintain
+consistent board structure across the team.
+"""
 
 @columns_bp.route("", methods=["GET"])
 @login_required
 def list_columns(project_id):
+    """Return the columns belonging to a project in position order.
+
+    Args:
+    project_id: ID of the project whose columns are requested.
+
+    Returns:
+    A JSON list of columns and HTTP 200.
+    """
     result = (
         supabase.table("columns")
         .select("*")
@@ -48,6 +65,18 @@ def create_column(project_id):
 @login_required
 @require_role("leader")
 def rename_column(project_id, column_id):
+    """Update a column's name or position.
+
+    Requires project leader permissions and at least one supported field
+    in the request body.
+
+    Args:
+    project_id: ID of the project containing the column.
+    column_id: ID of the column to update.
+
+    Returns:
+    The updated column and HTTP 200, or a validation error.
+    """
     body = request.get_json(force=True)
     updates = {}
     if "name" in body:
@@ -66,5 +95,16 @@ def rename_column(project_id, column_id):
 @login_required
 @require_role("leader")
 def delete_column(project_id, column_id):
+    """Delete a board column.
+
+    Requires project leader permissions.
+
+    Args:
+    project_id: ID of the project containing the column.
+    column_id: ID of the column to delete.
+
+    Returns:
+    A JSON confirmation message and HTTP 200.
+    """
     supabase.table("columns").delete().eq("id", column_id).execute()
     return jsonify({"message": "Column deleted"}), 200
