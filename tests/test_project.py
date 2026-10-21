@@ -8,8 +8,29 @@ from app import app as flask_app
 import routes.projects as projects
 import auth_utils
  
+"""
+Unit tests for project management and membership routes.
+
+This module verifies the behaviour of the Flask backend when users
+create, rename, or delete projects and manage project membership.
+
+The tests cover:
+- Validation of project names.
+- Successful project creation and assignment of the creator as leader.
+- Creation of the default To Do, In Progress, and Done columns.
+- Restrictions preventing developers from deleting projects.
+- Validation and handling of project renaming.
+- Protection against a project leader removing themselves.
+- Validation of member roles.
+- Handling of attempts to add users who do not exist.
+
+Supabase database operations and role lookup functions are mocked
+where required to isolate the route logic and prevent real data changes.
+"""
+
  
 class TestCreateProject(unittest.TestCase):
+    """Test project creation, input validation, and default board setup."""
  
     def test_create_project_missing_name(self):
         with flask_app.test_request_context(
@@ -66,6 +87,7 @@ class TestCreateProject(unittest.TestCase):
  
  
 class TestDeleteProject(unittest.TestCase):
+    """Test project deletion permissions and role restrictions."""
  
     def test_developer_cannot_delete_project(self):
         with patch.object(
@@ -84,6 +106,7 @@ class TestDeleteProject(unittest.TestCase):
                 self.assertTrue(expected == actual)
 
 class TestUpdateProject(unittest.TestCase):
+    """Test project renaming, validation, and missing-project handling."""
  
     def test_rename_project_missing_name(self):
         with patch.object(
@@ -131,6 +154,7 @@ class TestUpdateProject(unittest.TestCase):
 
 
 class TestRemoveMember(unittest.TestCase):
+    """Test project member removal rules and leader protection."""
  
     def test_cannot_remove_self_as_leader(self):
         """Protects against a project accidentally ending up with no Leader."""
@@ -157,6 +181,7 @@ class TestRemoveMember(unittest.TestCase):
  
  
 class TestAddMember(unittest.TestCase):
+    """Test project member addition, role validation, and user lookup."""
  
     def test_add_member_invalid_role(self):
         with patch.object(

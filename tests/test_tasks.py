@@ -7,6 +7,29 @@ from app import app as flask_app
 import routes.tasks as tasks
 
 
+"""
+Unit tests for task management routes.
+
+This module tests task creation, task updates, task deletion, and
+task assignment functionality in the Flask backend.
+
+The tests verify:
+- Project membership and role-based access control.
+- Validation of required task fields.
+- Validation of story points.
+- Handling of tasks that cannot be found.
+- Permissions for deleting and assigning tasks.
+- Successful task creation by developers and project leaders.
+- The ability of developers to move tasks between board columns.
+
+Dependencies such as Supabase and project-role lookup functions are
+mocked to isolate the route logic and avoid modifying the real database.
+
+Tests use pytest, Flask request contexts, and monkeypatching to
+control dependencies and verify response status codes and JSON data.
+"""
+
+
 def test_create_task_non_member(monkeypatch):
     """A user who is not part of the project should not be able to create a task."""
 

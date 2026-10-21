@@ -7,6 +7,28 @@ from app import app as flask_app
 import routes.projects as projects
 import routes.auth as auth
 
+"""
+Unit tests for project overview and user project access.
+
+This module tests the project overview endpoint and the user listing
+functionality.
+
+The project overview tests cover:
+- Rejection of unauthenticated requests.
+- Handling of users with no available projects.
+- Correct project counts and membership information.
+- Retrieval of member details and agile roles.
+- Cleaning role labels from member names.
+
+The user access tests cover:
+- Listing users with their associated projects.
+- Correct calculation of project membership counts.
+- Graceful handling of database errors when retrieving memberships.
+
+Supabase responses are mocked to provide predictable test data without
+requiring a live database connection.
+"""
+
 
 class TestProjectsOverview(unittest.TestCase):
 
