@@ -9,9 +9,31 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 # full_name (text), email (text). Adjust the .insert() call below if your
 # column names differ.
 
+"""
+Authentication and account-management routes for the Scrumptious API.
+
+Implements account registration, login, email verification, password
+recovery, and Supabase-based two-factor authentication using TOTP.
+
+The module also provides a user-listing endpoint that retrieves profile
+information and associated project memberships.
+
+Authentication operations are delegated to Supabase Auth, while
+application-specific profile data is stored in the profiles table.
+"""
+
 
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
+    """Register a user account and create its application profile.
+
+    Validates the supplied email, password, and full name before
+    requesting account creation through Supabase Auth.
+
+    Returns:
+        A JSON response with a success message and user ID, or an
+        error message with the relevant HTTP status code.
+    """
     body = request.get_json(force=True)
     email = body.get("email", "").strip().lower()
     password = body.get("password", "")
@@ -69,6 +91,16 @@ def signup():
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
+    """Authenticate a user and determine whether MFA is required.
+
+    Checks the supplied credentials through Supabase Auth and inspects
+    the user's verified TOTP factors.
+
+    Returns:
+        A JSON response containing the access token and user details,
+        or an MFA challenge response when additional verification is
+        required.
+    """
     body = request.get_json(force=True)
     email = body.get("email", "").strip().lower()
     password = body.get("password", "")
@@ -345,7 +377,16 @@ def forgot_password():
 
 @auth_bp.route("/reset-password", methods=["POST"])
 def reset_password():
-    """Checks the emailed recovery token or access_token, then sets the new password."""
+    """Reset a user's password using a valid recovery credential.
+
+    Validates the recovery token and password requirements before
+    updating the authenticated user's password through Supabase.
+
+    Returns:
+        A JSON success response or an error response if validation,
+        token verification, or the password update fails.
+    
+    Checks the emailed recovery token or access_token, then sets the new password."""
     body = request.get_json(force=True)
     token_hash = body.get("token_hash", "").strip()
     access_token = body.get("access_token", "").strip()

@@ -2,6 +2,16 @@ from functools import wraps
 from flask import request, jsonify, g
 from config import supabase, supabase_auth, maybe_one
 
+"""
+Authentication and authorisation utilities for the Flask API.
+
+Provides decorators for validating Supabase authentication tokens and
+restricting access to project resources according to membership roles.
+
+The module also includes a helper for retrieving a user's role within
+a project and attaching authentication and authorisation information
+to Flask's request context.
+"""
 
 def login_required(f):
     """Verifies the Supabase JWT sent from the frontend and attaches

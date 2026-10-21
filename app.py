@@ -7,6 +7,19 @@ from routes.columns import columns_bp
 from routes.tasks import tasks_bp
 from routes.notifications import notifications_bp
 
+"""
+Main entry point for the Scrumptious Flask application.
+
+Initialises the Flask application, configures Cross-Origin Resource Sharing
+(CORS), registers API blueprints, serves frontend HTML pages, and provides
+a health-check endpoint.
+
+The module also defines JSON error handlers for HTTP 404 and 500 responses
+to maintain a consistent API response format.
+
+Run this module directly to start the development server on port 5000.
+"""
+
 app = Flask(__name__)
 
 # Allow the frontend (served separately as static files) to call this API.
