@@ -8,6 +8,32 @@ import routes.notifications as notifications
 import notifications_utils
 
 
+"""
+Unit tests for in-app notification utilities and routes.
+
+This module tests the generation, retrieval, and management of
+in-app notifications in the Flask backend.
+
+Utility tests cover:
+- Removing role labels from display names.
+- Detecting changes in task descriptions.
+- Identifying newly added comments.
+- Excluding the acting user from notification recipients.
+- Removing duplicate recipients.
+- Avoiding unnecessary database inserts when no recipients remain.
+
+Route tests cover:
+- Rejecting unauthenticated notification requests.
+- Retrieving notifications and unread notification counts.
+- Marking an individual notification as read.
+- Marking all notifications as read.
+
+Supabase interactions are mocked to isolate notification behaviour
+and verify API responses without changing real notification records.
+"""
+
+
+
 # ---------------------------------------------------------------- utils tests
 
 def test_clean_name():

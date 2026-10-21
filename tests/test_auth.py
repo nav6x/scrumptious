@@ -7,6 +7,36 @@ import routes.tasks as tasks
 from flask import g
 from types import SimpleNamespace
 
+
+"""
+Unit tests for authentication and multi-factor authentication.
+
+This module tests account registration, login, and MFA verification
+using the Flask backend.
+
+Signup tests cover:
+- Missing required registration fields.
+- Successful account registration.
+- Normalisation of email addresses.
+- Handling of duplicate registered email addresses.
+- Handling of registration failures returned by Supabase.
+
+Login tests cover:
+- Invalid credentials.
+- Unconfirmed email addresses.
+- Successful authentication and token responses.
+
+MFA tests cover:
+- Detecting users with verified TOTP factors.
+- Validating required MFA verification parameters.
+- Successful verification of an MFA code.
+- Rejection of invalid verification codes.
+- Retrieval of the current user's MFA status.
+
+External authentication and database interactions are mocked to
+allow repeatable tests without relying on real user accounts.
+"""
+
 class TestSignup(unittest.TestCase):
 
     def test_signup_missing_email(self):

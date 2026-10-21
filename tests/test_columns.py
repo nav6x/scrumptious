@@ -10,6 +10,25 @@ import routes.columns as columns
 import auth_utils
  
  
+"""
+Unit tests for project board column management.
+
+This module tests the Flask routes responsible for creating,
+renaming, and deleting columns within a project board.
+
+The tests cover:
+- Preventing developers from creating columns without sufficient permissions.
+- Rejecting requests from users who are not project members.
+- Validating column names.
+- Creating columns with the correct position.
+- Rejecting rename requests that contain no updates.
+- Preventing developers from deleting columns when leader permissions
+  are required.
+
+Supabase operations and project-role lookups are mocked to ensure
+that the tests run independently of the real database.
+"""
+
 class TestCreateColumn(unittest.TestCase):
  
     def test_developer_cannot_create_column(self):
