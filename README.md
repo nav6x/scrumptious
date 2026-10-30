@@ -165,4 +165,4 @@ Authorization: Bearer <jwt-token>
 
 ## License
 
-This project was developed for academic coursework at Monash University.
+This project was developed for academic coursework at Monash University and is distributed under the [MIT License](LICENSE).
