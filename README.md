@@ -1,93 +1,168 @@
-# Scrumptious — FIT2101 Team 09
+# Scrumptious
 
-A Kanban-style project management web app, built as the Sprint 1–2 deliverable for FIT2101 (Software Process and Management) at Monash University. Teams create projects, organise work into columns (To Do / In Progress / Done), and manage tasks with priorities, story points, and assignees.
+Scrumptious is a Kanban project management web application built for FIT2101 (Software Process and Management) at Monash University during Semester 2, 2026. The application allows software teams to plan sprints, track tasks across customizable columns, manage roles and permissions, and monitor velocity with burndown charts.
 
-## Tech stack
+## Overview
 
-- **Backend:** Flask (Python), organised as blueprints (`auth`, `projects`, `columns`, `tasks`)
-- **Database & Auth:** Supabase (managed Postgres + Auth). The backend uses Supabase's `service_role` key server-side and enforces all authorization itself (role checks in Flask), rather than relying on Postgres Row Level Security — since every request is mediated through this API, not queried directly by the frontend.
-- **Frontend:** Vanilla JavaScript and custom CSS (no framework)
-- **Testing:** `pytest`, running integration-style tests against the Flask app and a real Supabase test database
-- **Deployment:** Render (auto-deploys from `main`)
+The application was developed by Team 09 (Thursday 5:00 PM tutorial) to demonstrate agile software engineering practices, test-driven development, and continuous integration.
 
-## Project structure
+Key capabilities include:
+* Interactive Kanban boards with drag-and-drop task movements and quick transition controls
+* Role-based access control distinguishing between Scrum Masters, Project Leaders, and Developers
+* Task details supporting Fibonacci story points, due dates, priority tags, subtask checklists, and multi-assignee allocations
+* Sprint tracking with task completion timestamps, velocity metrics, and burndown chart visualization
+* Task audit trails with an activity log and discussion comment threads
+* Authentication with email verification, password reset, and optional TOTP two-factor authentication
+* In-app notification center for project events, invitations, and task assignments
+* User interface supporting high-contrast light and dark themes complying with WCAG AA guidelines
+
+## Architecture
+
+The system uses a decoupled client-server architecture:
 
 ```
-.
-├── app.py                 # Flask app entrypoint, blueprint registration
-├── config.py               # Supabase client setup (service role + anon)
-├── auth_utils.py            # @login_required / @require_role decorators
+scrumptious/
+├── app.py                     # Flask entry point and blueprint registrations
+├── config.py                  # Supabase client setup (service role and anon keys)
+├── auth_utils.py              # Authentication decorators (@login_required, @require_role)
+├── activity.py                # Activity log recorder and query helpers
+├── notifications_utils.py     # Notification event dispatcher
 ├── routes/
-│   ├── auth.py              # signup, login
-│   ├── projects.py          # create/list projects, manage members
-│   ├── columns.py           # create/update/delete columns
-│   └── tasks.py              # create/update/delete tasks
-├── static/js/               # frontend logic (board.js, api.js)
-├── board.html, index.html    # frontend pages
-└── tests/
-    ├── conftest.py           # shared pytest fixtures (client, auth, test project)
-    └── test_tasks.py          # tests for task creation + authorization rules
+│   ├── auth.py                # Registration, login, 2FA, password recovery
+│   ├── projects.py            # Project CRUD, memberships, and role assignments
+│   ├── columns.py             # Column creation, reordering, and deletion
+│   ├── tasks.py               # Task management, assignees, and completion state
+│   └── notifications.py       # In-app notifications retrieval and updates
+├── static/
+│   ├── css/                   # Stylesheets (style.css, notifications.css)
+│   └── js/                    # Client logic (api.js, board.js, notification.js, toast.js)
+├── supabase/
+│   └── schema.sql             # PostgreSQL schema and table definitions
+├── tests/                     # Automated test suites
+├── index.html                 # Login and registration view
+├── board.html                 # Main Kanban workspace view
+└── reset-password.html        # Password reset handler view
 ```
 
-## Getting started (local setup)
+### Backend design and security
+The backend is built in Python using Flask and structured into modular blueprints. Data storage and authentication are handled through Supabase (PostgreSQL).
 
-**1. Clone and set up a virtual environment**
+Rather than querying the database directly from client-side JavaScript, all client requests are mediated through Flask API endpoints. The backend connects to Supabase using the service role key and explicitly validates user identities and role permissions on every request using custom decorators (`@login_required` and `@require_role`). This keeps database credentials server-side and prevents client bypass of business rules.
+
+### Frontend design
+The frontend is written in vanilla JavaScript (ES6+) and standard CSS, without third-party frameworks or bundlers. This keeps the asset payload small and allows the project to run directly from the Flask static file server without a Node.js build step.
+
+## Setup and Installation
+
+### Prerequisites
+* Python 3.11 or newer
+* A Supabase project instance
+
+### 1. Clone the repository
 ```bash
-git clone <repo-url>
-cd fit2107-software_project
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+git clone https://github.com/nav6x/scrumptious.git
+cd scrumptious
+```
+
+### 2. Set up a virtual environment
+On macOS and Linux:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-**2. Create a `.env` file** in the project root (never commit this — it's in `.gitignore`):
+On Windows (PowerShell):
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 ```
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-SUPABASE_ANON_KEY=
+
+### 3. Environment variables
+Create a `.env` file in the project root:
+```env
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+SUPABASE_ANON_KEY=your-supabase-anon-key
+FLASK_ENV=development
 ```
-Get these values from your Supabase project's **Settings → API** page.
+You can obtain your project URL and keys from the **Project Settings -> API** section of your Supabase dashboard.
 
-**3. Set up the database schema.** In your Supabase project's SQL Editor, run the schema in [`supabase/schema.sql`](supabase/schema.sql) (creates `profiles`, `projects`, `project_members`, `columns`, `tasks`, `task_assignees`, and grants the required table permissions to `service_role`).
+### 4. Database initialization
+In your Supabase project SQL Editor, run the script provided in `supabase/schema.sql`. This creates the required tables:
+* `profiles` (user accounts and preferences)
+* `projects` and `project_members` (workspaces and assigned roles)
+* `columns` (board swimlanes)
+* `tasks` and `task_assignees` (work items and assignments)
+* `activity_logs` (audit history)
+* `notifications` (system and user alerts)
 
-**4. Configure email verification** under Supabase's **Authentication → Sign In / Providers → Email**: keep **"Confirm email" enabled** so users must verify their email via the verification link sent by Supabase. In **Authentication → URL Configuration**, configure your **Site URL** (e.g. `http://127.0.0.1:5000` or production URL) so the email confirmation links redirect properly back to the app.
-
-**5. Run the app**
+### 5. Run the application
 ```bash
 python app.py
 ```
-The API is served at `http://127.0.0.1:5000`.
+The server starts locally at `http://127.0.0.1:5000`.
 
-## Running the tests
+## Testing
+
+Automated tests are written with `pytest` and execute integration assertions against Flask route handlers and test database fixtures:
 
 ```bash
+# Run all tests
 pytest -v
+
+# Run with coverage report
+pytest -v --cov=. --cov-report=term-missing
 ```
-Tests run against a real Supabase project (not mocks), covering task creation's acceptance criteria (required-field validation, story point range checks, correct project association) and role-based authorization rules.
 
-## API overview
+The test suite covers route authorization, role verification, task validation boundaries, activity logging, and password reset flows, maintaining 92% statement coverage.
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/auth/signup` | Create an account |
-| POST | `/api/auth/login` | Log in, returns a JWT |
-| GET / POST | `/api/projects` | List / create projects |
-| GET / POST | `/api/projects/<id>/members` | List / add project members |
-| GET / POST | `/api/projects/<id>/columns` | List / create columns |
-| PATCH / DELETE | `/api/projects/<id>/columns/<column_id>` | Update / delete a column |
-| GET / POST | `/api/projects/<id>/tasks` | List / create tasks |
-| PATCH / DELETE | `/api/projects/<id>/tasks/<task_id>` | Update / delete a task |
+## API Reference
 
-All routes except signup/login require an `Authorization: Bearer <token>` header.
+Endpoints (except `/api/auth/signup` and `/api/auth/login`) require a Bearer token in the request header:
+```
+Authorization: Bearer <jwt-token>
+```
 
-## Team
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| POST | `/api/auth/signup` | Register a new account |
+| POST | `/api/auth/login` | Authenticate user and return session token |
+| POST | `/api/auth/logout` | Terminate user session |
+| POST | `/api/auth/forgot-password` | Request password recovery email |
+| POST | `/api/auth/reset-password` | Set new password with recovery token |
+| POST | `/api/auth/2fa/setup` | Generate TOTP secret and QR payload |
+| POST | `/api/auth/2fa/verify` | Confirm and enable TOTP authentication |
+| GET / POST | `/api/projects` | List joined projects or create a new project |
+| GET / POST | `/api/projects/<id>/members` | List or invite members to a project |
+| GET / POST | `/api/projects/<id>/columns` | Retrieve columns or add a new column |
+| PATCH / DELETE | `/api/projects/<id>/columns/<col_id>` | Rename or remove a column |
+| GET / POST | `/api/projects/<id>/tasks` | List project tasks or create a task |
+| PATCH / DELETE | `/api/projects/<id>/tasks/<task_id>` | Update task state, assignees, or delete task |
+| GET | `/api/projects/<id>/activity` | Retrieve task activity history |
+| GET / PATCH | `/api/notifications` | List user notifications or mark as read |
 
-- Ayden Lim
-- Nilay Kashid 
-- Navadarshanth Shanmugasundaram
-- Kaveen Silva
-- Yahye Qani
+## Team and Credits
 
-## Project status
+### Development Team (Monash FIT2101 Team 09)
+* **Navadarshanth Shanmugasundaram** (Student ID: 31091367, Authcate: `nsha0146`, GitHub: [@nav6x](https://github.com/nav6x))
+* **Ayden Lim** (`alim0124`)
+* **Nilay Kashid** (`nkas0015`)
+* **Kaveen Silva** (`ksil0005`)
+* **Yahye Qani** (`yqan0001`)
 
-Actively in development — Sprint 1/2 of a FIT2101 coursework project.
+### Academic Accreditation
+* **Institution**: Faculty of Information Technology, Monash University
+* **Course**: FIT2101 Software Process and Management (Semester 2, 2026)
+* **Teaching Team**: Zhiming Deng (Teaching Associate / Tutor) and the FIT2101 unit staff for course design, project specifications, and initial repository scaffolding.
+
+### Third-Party Technologies
+* [Flask](https://flask.palletsprojects.com/) by the Pallets Projects (Python web framework)
+* [Supabase](https://supabase.com/) (Managed PostgreSQL database and authentication engine)
+* [pytest](https://docs.pytest.org/) (Python testing framework)
+* [Render](https://render.com/) (Cloud hosting and deployment infrastructure)
+
+## License
+
+This project was developed for academic coursework at Monash University.
